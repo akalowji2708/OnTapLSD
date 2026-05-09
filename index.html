@@ -2154,7 +2154,7 @@ function submitExam() {
   replayBtn.onclick = () => startQuiz(lastMode);
   document.getElementById('lb-result-notify').style.display = 'none';
   updateHome();
-  if (isRankedMode) handleRankedResult(score10, timeUsed);
+  if (roomState && roomState.code) handleRoomResult(score10);
 }
 function addRipple(e) {
   const btn = e.currentTarget;
@@ -2293,7 +2293,7 @@ function showResult() {
   }
   document.getElementById('lb-result-notify').style.display = 'none';
   updateHome();
-  if (isRankedMode) handleRankedResult(score10, 0);
+  if (roomState && roomState.code) handleRoomResult(score10);
 }
 
 function restartQuiz() {
@@ -2309,7 +2309,13 @@ function restartQuiz() {
 
 function goHome() {
   stopExamTimer();
-  const screens = ['quiz','exam','result','leaderboard'].map(id => document.getElementById(id)).filter(el => el && el.style.display !== 'none');
+  stopAllPolls();
+  // Reset room state khi về home
+  if (roomState && roomState.code) {
+    roomState = { code:null, myName:null, isHost:false, memberId:null, pollInterval:null, roomExamMode:false };
+    document.getElementById('room-result-inline').style.display = 'none';
+  }
+  const screens = ['quiz','exam','result','room-result-screen'].map(id => document.getElementById(id)).filter(el => el && el.style.display !== 'none');
   const homeEl = document.getElementById('home');
   const show = () => {
     screens.forEach(s => s.style.display = 'none');
@@ -2330,16 +2336,19 @@ function goHome() {
 updateHome();
 
 /* ═══════════════════════════════════════════════
-   ROOM / CHALLENGE SYSTEM (Firebase Realtime DB)
+   ROOM / CHALLENGE SYSTEM
+   Dùng Firebase Realtime Database (free tier)
+   ► Cách setup (1 lần, ~3 phút):
+     1. Vào https://console.firebase.google.com
+     2. "Add project" → đặt tên bất kỳ → tiếp tục
+     3. Vào "Realtime Database" → "Create Database" → "Test mode" → Done
+     4. Copy URL dạng https://TÊN-default-rtdb.firebaseio.com
+     5. Thay giá trị FIREBASE_URL bên dưới
 ═══════════════════════════════════════════════ */
 
-// Firebase config – dùng project demo public của Google (hoặc thay bằng project của bạn)
-const FIREBASE_URL = 'https://quiz-lsdang-default-rtdb.firebaseio.com';
-
-// Nếu bạn muốn dùng Firebase của riêng mình:
-// 1. Tạo project tại https://console.firebase.google.com
-// 2. Vào Realtime Database → tạo DB, chọn "test mode"
-// 3. Thay FIREBASE_URL bằng URL của project bạn
+// ▼▼▼ THAY URL NÀY BẰNG URL FIREBASE CỦA BẠN ▼▼▼
+const FIREBASE_URL = 'https://lsdang-quiz-default-rtdb.asia-southeast1.firebasedatabase.app';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 let roomState = {
   code: null,
@@ -2372,171 +2381,185 @@ function openRoomModal() {
 function closeRoomModal(e) {
   if (!e || e.target === document.getElementById('room-modal')) {
     document.getElementById('room-modal').classList.remove('active');
-    if (roomState.pollInterval) { clearInterval(roomState.pollInterval); roomState.pollInterval = null; }
+    stopAllPolls();
   }
 }
 
-async function firebaseSet(path, data) {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('Firebase error: ' + res.status);
-    return await res.json();
-  } catch(e) { console.error('Firebase set error:', e); return null; }
+function stopAllPolls() {
+  if (roomState.pollInterval) { clearInterval(roomState.pollInterval); roomState.pollInterval = null; }
+  if (roomResultPoll) { clearInterval(roomResultPoll); roomResultPoll = null; }
 }
 
-async function firebaseUpdate(path, data) {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
-      method: 'PATCH',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('Firebase error: ' + res.status);
-    return await res.json();
-  } catch(e) { console.error('Firebase update error:', e); return null; }
+/* ── Firebase helpers ── */
+async function fbSet(path, data) {
+  const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+async function fbPatch(path, data) {
+  const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
+    method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+async function fbGet(path) {
+  const res = await fetch(`${FIREBASE_URL}/${path}.json`);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
 }
 
-async function firebaseGet(path) {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/${path}.json`);
-    if (!res.ok) throw new Error('Firebase error: ' + res.status);
-    return await res.json();
-  } catch(e) { console.error('Firebase get error:', e); return null; }
+function showRoomError(msg) {
+  const btn = document.getElementById('host-name-input');
+  const errEl = document.getElementById('host-name-error');
+  errEl.textContent = msg;
+  errEl.classList.add('show');
 }
 
+/* ── Tạo phòng ── */
 async function createRoom() {
   const nameInput = document.getElementById('host-name-input');
   const name = nameInput.value.trim();
-  if (!name) { document.getElementById('host-name-error').classList.add('show'); nameInput.focus(); return; }
+  if (!name) {
+    document.getElementById('host-name-error').textContent = '⚠ Vui lòng nhập tên';
+    document.getElementById('host-name-error').classList.add('show');
+    nameInput.focus(); return;
+  }
+
+  // Disable button & show loading
+  const btn = document.querySelector('#room-view-create .btn-primary');
+  btn.textContent = '⏳ Đang tạo...'; btn.disabled = true;
 
   const code = generateRoomCode();
-  const memberId = 'u_' + Date.now();
+  const memberId = 'h_' + Date.now();
 
-  const roomData = {
-    code,
-    createdAt: Date.now(),
-    status: 'waiting', // waiting | started | done
-    members: {
-      [memberId]: { name, isHost: true, status: 'waiting', score: null, ts: Date.now() }
-    }
-  };
-
-  const result = await firebaseSet(`rooms/${code}`, roomData);
-  if (!result) {
-    alert('Không kết nối được Firebase. Kiểm tra FIREBASE_URL trong code.');
+  try {
+    await fbSet(`rooms/${code}`, {
+      code, createdAt: Date.now(), status: 'waiting',
+      members: { [memberId]: { name, isHost:true, status:'waiting', score:null, ts:Date.now() } }
+    });
+  } catch(e) {
+    btn.textContent = 'Tạo phòng →'; btn.disabled = false;
+    document.getElementById('host-name-error').textContent = '⚠ Lỗi kết nối. Kiểm tra lại FIREBASE_URL trong file HTML.';
+    document.getElementById('host-name-error').classList.add('show');
     return;
   }
 
-  roomState.code = code;
-  roomState.myName = name;
-  roomState.isHost = true;
-  roomState.memberId = memberId;
-  roomState.roomExamMode = true;
-
+  roomState = { code, myName:name, isHost:true, memberId, pollInterval:null, roomExamMode:true };
+  btn.textContent = 'Tạo phòng →'; btn.disabled = false;
   document.getElementById('room-code-show').textContent = code;
   showRoomView('room-view-waiting');
   startWaitingPoll();
 }
 
+/* ── Vào phòng ── */
 async function joinRoom() {
   const nameInput = document.getElementById('join-name-input');
   const codeInput = document.getElementById('join-code-input');
   const name = nameInput.value.trim();
   const code = codeInput.value.trim().toUpperCase();
-  const errorEl = document.getElementById('join-error');
+  const errEl = document.getElementById('join-error');
 
-  if (!name || !code || code.length < 4) {
-    errorEl.textContent = '⚠ Vui lòng nhập đủ tên và mã phòng';
-    errorEl.classList.add('show');
-    return;
+  if (!name) { errEl.textContent = '⚠ Nhập tên của bạn'; errEl.classList.add('show'); nameInput.focus(); return; }
+  if (!code || code.length < 4) { errEl.textContent = '⚠ Nhập mã phòng (4–6 ký tự)'; errEl.classList.add('show'); codeInput.focus(); return; }
+
+  const btn = document.querySelector('#room-view-join .btn-primary');
+  btn.textContent = '⏳ Đang tìm phòng...'; btn.disabled = true;
+
+  let roomData;
+  try {
+    roomData = await fbGet(`rooms/${code}`);
+  } catch(e) {
+    btn.textContent = 'Vào phòng →'; btn.disabled = false;
+    errEl.textContent = '⚠ Lỗi kết nối. Kiểm tra mạng hoặc FIREBASE_URL.';
+    errEl.classList.add('show'); return;
   }
 
-  // Check room exists
-  const roomData = await firebaseGet(`rooms/${code}`);
-  if (!roomData) {
-    errorEl.textContent = '⚠ Không tìm thấy phòng. Kiểm tra lại mã hoặc kết nối mạng.';
-    errorEl.classList.add('show');
-    return;
+  btn.textContent = 'Vào phòng →'; btn.disabled = false;
+
+  // roomData === null nghĩa là Firebase trả về null (key không tồn tại)
+  if (!roomData || roomData === null || typeof roomData !== 'object' || !roomData.code) {
+    errEl.textContent = '⚠ Không tìm thấy phòng "' + code + '". Kiểm tra lại mã.';
+    errEl.classList.add('show'); return;
   }
   if (roomData.status === 'started') {
-    errorEl.textContent = '⚠ Phòng này đã bắt đầu thi rồi!';
-    errorEl.classList.add('show');
-    return;
+    errEl.textContent = '⚠ Phòng này đã bắt đầu thi, không vào được nữa.';
+    errEl.classList.add('show'); return;
   }
 
-  const memberId = 'u_' + Date.now();
-  await firebaseUpdate(`rooms/${code}/members/${memberId}`, {
-    name, isHost: false, status: 'waiting', score: null, ts: Date.now()
-  });
+  const memberId = 'g_' + Date.now();
+  try {
+    await fbPatch(`rooms/${code}/members/${memberId}`, {
+      name, isHost:false, status:'waiting', score:null, ts:Date.now()
+    });
+  } catch(e) {
+    errEl.textContent = '⚠ Lỗi khi vào phòng. Thử lại.';
+    errEl.classList.add('show'); return;
+  }
 
-  roomState.code = code;
-  roomState.myName = name;
-  roomState.isHost = false;
-  roomState.memberId = memberId;
-  roomState.roomExamMode = true;
-
+  roomState = { code, myName:name, isHost:false, memberId, pollInterval:null, roomExamMode:true };
   document.getElementById('room-modal').classList.remove('active');
   showJoinedWaitingScreen(code, name);
 }
 
+/* ── Màn chờ cho guest ── */
 function showJoinedWaitingScreen(code, name) {
-  // Hiện thông báo chờ host bắt đầu
   ['home','quiz','exam','result'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    const el = document.getElementById(id); if(el) el.style.display='none';
   });
-  document.getElementById('room-result-screen').style.display = 'block';
-  document.getElementById('room-result-title').textContent = '⏳ Đã vào phòng – Chờ bắt đầu';
-  document.getElementById('room-result-code-display').textContent = 'Mã phòng: ' + code + ' · Xin chào ' + name;
-  document.getElementById('room-result-rows').innerHTML = '<div class="lb-loading">⏳ Chờ người tổ chức bắt đầu bài thi...</div>';
+  const screen = document.getElementById('room-result-screen');
+  screen.style.display = 'block';
+  document.getElementById('room-result-title').textContent = '⏳ Chờ bắt đầu';
+  document.getElementById('room-result-code-display').textContent = 'Phòng: ' + code + ' · ' + name;
+  document.getElementById('room-result-rows').innerHTML = '<div class="lb-loading">⏳ Chờ người tổ chức nhấn "Bắt đầu thi"...</div>';
 
-  // Poll for start signal
-  if (roomState.pollInterval) clearInterval(roomState.pollInterval);
+  stopAllPolls();
   roomState.pollInterval = setInterval(async () => {
-    const roomData = await firebaseGet(`rooms/${code}`);
-    if (!roomData) return;
-    if (roomData.status === 'started') {
-      clearInterval(roomState.pollInterval);
-      roomState.pollInterval = null;
-      document.getElementById('room-result-screen').style.display = 'none';
-      startRoomExamAsGuest();
-    }
-    // Update member list display
-    if (roomData.members) {
-      const members = Object.values(roomData.members);
-      document.getElementById('room-result-rows').innerHTML = members.map(m =>
-        `<div class="room-result-row"><div></div><div class="room-result-name">${escHtml(m.name)}${m.isHost?' 👑':''}</div><div></div><div class="room-result-status">Chờ...</div></div>`
-      ).join('');
-    }
-  }, 2000);
+    try {
+      const data = await fbGet(`rooms/${code}`);
+      if (!data) return;
+      if (data.status === 'started') {
+        clearInterval(roomState.pollInterval); roomState.pollInterval = null;
+        screen.style.display = 'none';
+        startRoomExamAsGuest();
+        return;
+      }
+      if (data.members) {
+        const members = Object.values(data.members);
+        document.getElementById('room-result-rows').innerHTML = members.map(m =>
+          `<div class="room-result-row"><div></div><div class="room-result-name">${escHtml(m.name)}${m.isHost?' 👑':''}</div><div></div><div class="room-result-status">Chờ...</div></div>`
+        ).join('');
+      }
+    } catch(e) { /* ignore */ }
+  }, 2500);
 }
 
+/* ── Poll danh sách thành viên (host) ── */
 function startWaitingPoll() {
-  if (roomState.pollInterval) clearInterval(roomState.pollInterval);
+  stopAllPolls();
   roomState.pollInterval = setInterval(async () => {
-    const roomData = await firebaseGet(`rooms/${roomState.code}/members`);
-    if (!roomData) return;
-    const members = Object.values(roomData);
-    document.getElementById('room-member-count').textContent = members.length;
-    const list = document.getElementById('room-member-list');
-    list.innerHTML = members.map(m =>
-      `<div class="room-member-item"><div class="room-member-dot"></div><span>${escHtml(m.name)}${m.isHost?' 👑':''}</span></div>`
-    ).join('');
-  }, 2000);
+    try {
+      const members = await fbGet(`rooms/${roomState.code}/members`);
+      if (!members) return;
+      const list = Object.values(members);
+      document.getElementById('room-member-count').textContent = list.length;
+      document.getElementById('room-member-list').innerHTML = list.map(m =>
+        `<div class="room-member-item"><div class="room-member-dot"></div><span>${escHtml(m.name)}${m.isHost?' 👑':''}</span></div>`
+      ).join('');
+    } catch(e) { /* ignore */ }
+  }, 2500);
 }
 
+/* ── Host bắt đầu thi ── */
 async function startRoomExam() {
   if (!roomState.isHost) return;
-  if (roomState.pollInterval) { clearInterval(roomState.pollInterval); roomState.pollInterval = null; }
-  // Signal all members to start
-  await firebaseUpdate(`rooms/${roomState.code}`, { status: 'started' });
+  stopAllPolls();
+  try { await fbPatch(`rooms/${roomState.code}`, { status:'started' }); } catch(e) {}
   document.getElementById('room-modal').classList.remove('active');
   isRankedMode = false;
-  startQuiz('all'); // Thi thử 50 câu
+  startQuiz('all');
 }
 
 function startRoomExamAsGuest() {
@@ -2544,58 +2567,53 @@ function startRoomExamAsGuest() {
   startQuiz('all');
 }
 
-// Called after exam submit when in room mode
+/* ── Lưu kết quả và poll kết quả phòng ── */
 async function handleRoomResult(score10) {
   if (!roomState.code || !roomState.memberId) return;
-  // Save my result
-  await firebaseUpdate(`rooms/${roomState.code}/members/${roomState.memberId}`, {
-    status: 'done', score: score10
-  });
-
-  // Show inline card and start polling
+  try {
+    await fbPatch(`rooms/${roomState.code}/members/${roomState.memberId}`, { status:'done', score:score10 });
+  } catch(e) { /* ignore */ }
   document.getElementById('room-result-inline').style.display = 'block';
   pollRoomResults();
 }
 
 let roomResultPoll = null;
-async function pollRoomResults() {
+function pollRoomResults() {
   if (roomResultPoll) clearInterval(roomResultPoll);
-  const renderRoomResults = async () => {
-    const roomData = await firebaseGet(`rooms/${roomState.code}`);
-    if (!roomData || !roomData.members) return;
-    const members = Object.values(roomData.members).sort((a,b) => {
-      if (a.score !== null && b.score !== null) return b.score - a.score;
-      if (a.score !== null) return -1;
-      if (b.score !== null) return 1;
-      return 0;
-    });
-    const medals = ['🥇','🥈','🥉'];
-    const rows = document.getElementById('room-result-inline-rows');
-    rows.innerHTML = members.map((m, i) => {
-      const rankIcon = i < 3 ? medals[i] : (i+1)+'';
-      const isMe = m.name === roomState.myName;
-      const scoreStr = m.score !== null ? m.score + '/10' : '...';
-      const statusStr = m.status === 'done' ? '✓ Xong' : '⏳ Đang thi';
-      return `<div class="room-result-row" style="${isMe?'font-weight:700;background:rgba(21,101,192,0.07);border-radius:6px':''}">
-        <div class="room-result-rank">${rankIcon}</div>
-        <div class="room-result-name">${escHtml(m.name)}${isMe?' (bạn)':''}</div>
-        <div class="room-result-score" style="color:${m.score!==null?(m.score>=5?'var(--green)':'var(--red)'):'var(--text-sub)'}">${scoreStr}</div>
-        <div class="room-result-status">${statusStr}</div>
-      </div>`;
-    }).join('');
-
-    const allDone = members.every(m => m.status === 'done');
-    const statusEl = document.getElementById('room-result-inline-status');
-    if (allDone) {
-      statusEl.textContent = '✅ Tất cả đã hoàn thành!';
-      if (roomResultPoll) { clearInterval(roomResultPoll); roomResultPoll = null; }
-    } else {
-      const doneCount = members.filter(m => m.status === 'done').length;
-      statusEl.textContent = `⏳ ${doneCount}/${members.length} người đã hoàn thành...`;
-    }
+  const render = async () => {
+    try {
+      const data = await fbGet(`rooms/${roomState.code}`);
+      if (!data || !data.members) return;
+      const members = Object.values(data.members).sort((a,b) => {
+        if (a.score !== null && b.score !== null) return b.score - a.score;
+        if (a.score !== null) return -1;
+        if (b.score !== null) return 1;
+        return 0;
+      });
+      const medals = ['🥇','🥈','🥉'];
+      document.getElementById('room-result-inline-rows').innerHTML = members.map((m,i) => {
+        const isMe = m.name === roomState.myName && m.memberId === roomState.memberId || m.name === roomState.myName;
+        const scoreStr = m.score !== null ? m.score+'/10' : '...';
+        return `<div class="room-result-row" style="${isMe?'font-weight:700;background:rgba(21,101,192,0.08);border-radius:6px;padding:0 4px':''}">
+          <div class="room-result-rank">${i<3?medals[i]:(i+1)}</div>
+          <div class="room-result-name">${escHtml(m.name)}${isMe?' <span style="color:#1565c0;font-size:0.72rem">(bạn)</span>':''}${m.isHost?' 👑':''}</div>
+          <div class="room-result-score" style="color:${m.score!==null?(m.score>=5?'var(--green)':'var(--red)'):'var(--text-sub)'}">${scoreStr}</div>
+          <div class="room-result-status">${m.status==='done'?'✓ Xong':'⏳ Đang thi'}</div>
+        </div>`;
+      }).join('');
+      const allDone = members.every(m => m.status === 'done');
+      const statusEl = document.getElementById('room-result-inline-status');
+      if (allDone) {
+        statusEl.textContent = '✅ Tất cả đã hoàn thành!';
+        if (roomResultPoll) { clearInterval(roomResultPoll); roomResultPoll = null; }
+      } else {
+        const doneCount = members.filter(m => m.status==='done').length;
+        statusEl.textContent = `⏳ ${doneCount}/${members.length} người đã hoàn thành...`;
+      }
+    } catch(e) { /* ignore */ }
   };
-  renderRoomResults();
-  roomResultPoll = setInterval(renderRoomResults, 3000);
+  render();
+  roomResultPoll = setInterval(render, 3000);
 }
 
 function escHtml(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
