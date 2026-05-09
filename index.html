@@ -970,6 +970,102 @@ body {
 .lb-notify-text { font-size:0.85rem; color:var(--green); font-weight:600; line-height:1.5; }
 .lb-notify-fail { background:linear-gradient(135deg,#fff3ea,#fde8e0); border-color:var(--gold); }
 .lb-notify-fail .lb-notify-text { color:#8a5000; }
+
+/* ═══ THÁCH ĐẤU BẠN BÈ ═══ */
+#duel { display:none; }
+.duel-hero {
+  background: linear-gradient(135deg, #1a3a6b 0%, #1e5fa8 60%, #2980d4 100%);
+  border-radius: var(--radius); padding: 1.6rem; margin-bottom: 1.1rem;
+  text-align: center; color: white; box-shadow: var(--shadow-md);
+  position: relative; overflow: hidden;
+}
+.duel-hero::before {
+  content:''; position:absolute; inset:0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M0 20 L20 0 L40 20 L20 40Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.duel-hero h2 { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; margin-bottom:0.3rem; }
+.duel-hero p { font-size:0.83rem; opacity:0.85; }
+.duel-icon { font-size:2.4rem; margin-bottom:0.6rem; display:block; animation: swordSpin 3s ease-in-out infinite; }
+@keyframes swordSpin { 0%,100%{transform:rotate(-8deg) scale(1)} 50%{transform:rotate(8deg) scale(1.08)} }
+
+.duel-tabs { display:flex; gap:0; margin-bottom:1.1rem; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow-sm); }
+.duel-tab { flex:1; padding:0.85rem; text-align:center; cursor:pointer; font-size:0.88rem; font-weight:600; color:var(--text-sub); border:none; background:none; font-family:'Be Vietnam Pro',sans-serif; transition:all 0.2s; border-bottom:3px solid transparent; }
+.duel-tab.active { color:var(--red); border-bottom-color:var(--red); background:var(--surface2); }
+.duel-tab:hover:not(.active) { background:var(--cream); }
+
+.duel-panel { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:1.4rem; margin-bottom:1rem; box-shadow:var(--shadow-sm); }
+.duel-panel h3 { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--red-dark); margin-bottom:0.8rem; }
+.duel-panel p { font-size:0.83rem; color:var(--text-sub); margin-bottom:1rem; line-height:1.6; }
+.duel-link-box { display:flex; gap:0.5rem; align-items:center; background:var(--cream); border:1.5px solid var(--border); border-radius:10px; padding:0.6rem 0.9rem; margin-bottom:0.9rem; }
+.duel-link-input { flex:1; background:none; border:none; outline:none; font-family:'Be Vietnam Pro',sans-serif; font-size:0.82rem; color:var(--text); }
+.duel-copy-btn { background:var(--red); color:white; border:none; border-radius:8px; padding:0.4rem 0.9rem; font-family:'Be Vietnam Pro',sans-serif; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.duel-copy-btn:hover { background:var(--red-dark); transform:translateY(-1px); }
+.duel-copy-btn.copied { background:var(--green); }
+.duel-gen-btn { width:100%; padding:0.85rem; background:linear-gradient(135deg,#1a3a6b,#1e5fa8); color:white; border:none; border-radius:12px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(26,58,107,0.3); }
+.duel-gen-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(26,58,107,0.4); }
+.duel-join-input { width:100%; padding:0.75rem 1rem; border:1.5px solid var(--border); border-radius:10px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.9rem; color:var(--text); background:var(--surface); outline:none; transition:border-color 0.2s,box-shadow 0.2s; margin-bottom:0.8rem; }
+.duel-join-input:focus { border-color:#1e5fa8; box-shadow:0 0 0 3px rgba(30,95,168,0.12); }
+.duel-join-btn { width:100%; padding:0.85rem; background:linear-gradient(135deg,#1a3a6b,#1e5fa8); color:white; border:none; border-radius:12px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(26,58,107,0.3); }
+.duel-join-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(26,58,107,0.4); }
+
+.duel-results-table { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:1rem; }
+.duel-results-header { display:grid; grid-template-columns:40px 1fr 80px 90px; background:linear-gradient(135deg,#1a3a6b,#1e5fa8); color:white; padding:0.7rem 1rem; font-size:0.74rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; }
+.duel-result-row { display:grid; grid-template-columns:40px 1fr 80px 90px; padding:0.8rem 1rem; border-bottom:1px solid var(--border); align-items:center; animation:lbRowEnter 0.4s both; }
+.duel-result-row:last-child { border-bottom:none; }
+.duel-result-row.is-me { background:linear-gradient(90deg,#eef4fd,#f5f9ff); font-weight:700; }
+.duel-result-row .dr-score { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--green); text-align:center; }
+.duel-result-row .dr-time { font-size:0.78rem; color:var(--text-sub); text-align:right; }
+.duel-result-row .dr-name { font-size:0.88rem; }
+.duel-badge { display:inline-block; font-size:0.68rem; background:#eef4fd; color:#1a3a6b; border:1px solid #c0d4f0; border-radius:20px; padding:1px 8px; margin-left:6px; font-weight:700; vertical-align:middle; }
+.duel-empty { text-align:center; padding:2.5rem 1.5rem; color:var(--text-sub); }
+.duel-empty .de-icon { font-size:2.2rem; display:block; margin-bottom:0.6rem; opacity:0.5; }
+.duel-room-id { font-family:monospace; font-size:1.1rem; font-weight:700; color:#1e5fa8; background:#eef4fd; border:2px dashed #c0d4f0; border-radius:10px; padding:0.5rem 1.2rem; letter-spacing:0.1em; display:inline-block; margin-bottom:0.5rem; }
+.duel-waiting { display:flex; align-items:center; gap:0.5rem; font-size:0.83rem; color:var(--text-sub); margin-bottom:0.9rem; }
+.duel-waiting-dot { width:8px; height:8px; border-radius:50%; background:#1e5fa8; animation:waitPulse 1.2s ease-in-out infinite; }
+@keyframes waitPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+.duel-name-input { width:100%; padding:0.7rem 1rem; border:1.5px solid var(--border); border-radius:10px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.9rem; color:var(--text); background:var(--surface); outline:none; transition:border-color 0.2s; margin-bottom:0.8rem; }
+.duel-name-input:focus { border-color:#1e5fa8; box-shadow:0 0 0 3px rgba(30,95,168,0.12); }
+.duel-name-error { font-size:0.78rem; color:var(--red); display:none; margin-bottom:0.5rem; }
+.duel-name-error.show { display:block; }
+
+/* ═══ BÌNH LUẬN CỘNG ĐỒNG ═══ */
+.comment-section {
+  margin-top:0.8rem; padding-top:0.8rem;
+  border-top:1px dashed var(--border);
+}
+.comment-toggle {
+  background:none; border:none; cursor:pointer;
+  font-family:'Be Vietnam Pro',sans-serif; font-size:0.78rem;
+  color:var(--text-sub); display:flex; align-items:center; gap:0.4rem;
+  padding:0.3rem 0; transition:color 0.15s; font-weight:500;
+}
+.comment-toggle:hover { color:var(--red); }
+.comment-toggle .ct-count { background:var(--cream-dark); border:1px solid var(--border); border-radius:20px; padding:1px 7px; font-size:0.7rem; font-weight:700; }
+.comment-body { margin-top:0.7rem; display:none; }
+.comment-body.open { display:block; }
+.comment-list { display:flex; flex-direction:column; gap:0.45rem; margin-bottom:0.7rem; max-height:240px; overflow-y:auto; }
+.comment-item {
+  background:var(--cream); border-radius:9px; border:1px solid var(--border);
+  padding:0.65rem 0.85rem; font-size:0.8rem; line-height:1.55;
+  animation:lbRowEnter 0.3s both;
+}
+.comment-item .ci-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; }
+.comment-item .ci-name { font-weight:700; color:var(--text); font-size:0.78rem; }
+.comment-item .ci-date { font-size:0.68rem; color:var(--text-sub); }
+.comment-item .ci-text { color:var(--text); }
+.comment-item .ci-likes { margin-top:0.3rem; display:flex; align-items:center; gap:0.3rem; }
+.ci-like-btn { background:none; border:1px solid var(--border); border-radius:20px; padding:1px 8px; font-size:0.7rem; cursor:pointer; color:var(--text-sub); font-family:'Be Vietnam Pro',sans-serif; transition:all 0.15s; }
+.ci-like-btn:hover, .ci-like-btn.liked { background:#fff0f0; border-color:#f5a0a0; color:var(--red); }
+.comment-form { display:flex; flex-direction:column; gap:0.5rem; }
+.comment-name-row { display:flex; gap:0.5rem; }
+.comment-input-name { flex:0 0 120px; padding:0.5rem 0.7rem; border:1.5px solid var(--border); border-radius:8px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.78rem; color:var(--text); background:var(--surface); outline:none; transition:border-color 0.15s; }
+.comment-input-name:focus { border-color:var(--red); }
+.comment-input-text { flex:1; padding:0.5rem 0.7rem; border:1.5px solid var(--border); border-radius:8px; font-family:'Be Vietnam Pro',sans-serif; font-size:0.78rem; color:var(--text); background:var(--surface); outline:none; transition:border-color 0.15s; resize:none; }
+.comment-input-text:focus { border-color:var(--red); }
+.comment-submit-row { display:flex; justify-content:flex-end; }
+.comment-submit-btn { background:var(--red); color:white; border:none; border-radius:8px; padding:0.4rem 1rem; font-family:'Be Vietnam Pro',sans-serif; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.comment-submit-btn:hover { background:var(--red-dark); transform:translateY(-1px); }
+.comment-empty { font-size:0.78rem; color:var(--text-sub); font-style:italic; padding:0.4rem 0; }
 </style>
 </head>
 <body>
@@ -995,6 +1091,7 @@ body {
     </div>
     <button class="btn btn-primary" onclick="startQuiz('all')">Thi thử</button>
     <button class="btn btn-secondary" onclick="openNameModal()" style="background:linear-gradient(135deg,#d4a853,#f0c97a);color:#5c3a00;border-color:#d4a853;margin-left:0.6rem">🏆 Xếp hạng</button>
+    <button class="btn btn-secondary" onclick="openDuel()" style="background:linear-gradient(135deg,#1a3a6b,#1e5fa8);color:white;border-color:#1a3a6b;margin-left:0.6rem">⚔️ Thách đấu</button>
     <button class="btn btn-secondary" onclick="openWeakModal()" id="weak-btn" style="display:none">Ôn câu còn sai</button>
   </div>
 
@@ -1043,7 +1140,23 @@ body {
     <div class="q-text" id="q-text"></div>
     <div id="options"></div>
     <div class="explain" id="explain"></div>
-  </div>
+    <div class="comment-section" id="comment-section" style="display:none">
+      <button class="comment-toggle" onclick="toggleComments()" id="comment-toggle-btn">
+        💬 Bình luận cộng đồng <span class="ct-count" id="comment-count">0</span>
+      </button>
+      <div class="comment-body" id="comment-body">
+        <div class="comment-list" id="comment-list"></div>
+        <div class="comment-form">
+          <div class="comment-name-row">
+            <input class="comment-input-name" id="comment-name" placeholder="Tên của bạn" maxlength="20">
+            <input class="comment-input-text" id="comment-text" placeholder="Nhận xét, giải thích thêm..." maxlength="200">
+          </div>
+          <div class="comment-submit-row">
+            <button class="comment-submit-btn" onclick="submitComment()">Gửi →</button>
+          </div>
+        </div>
+      </div>
+    </div>
   <div class="quiz-nav">
     <button class="btn btn-secondary" onclick="goHome()">← Thoát</button>
     <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none">Câu tiếp →</button>
@@ -1138,6 +1251,79 @@ body {
   <div style="text-align:center;padding:0.5rem 0 1.5rem">
     <button class="btn btn-secondary" onclick="goHome()">← Về trang chủ</button>
     <button class="btn btn-primary" onclick="openNameModal()" style="margin-left:0.6rem">🏆 Tham gia xếp hạng</button>
+  </div>
+</div>
+
+<!-- DUEL SCREEN -->
+<div class="container" id="duel" style="display:none">
+  <div class="duel-hero">
+    <span class="duel-icon">⚔️</span>
+    <h2>Thách Đấu Bạn Bè</h2>
+    <p>Tạo phòng thi, chia sẻ link — ai điểm cao hơn thắng!</p>
+  </div>
+  <div class="duel-tabs">
+    <button class="duel-tab active" id="tab-create" onclick="switchDuelTab('create')">➕ Tạo phòng</button>
+    <button class="duel-tab" id="tab-join" onclick="switchDuelTab('join')">🔗 Vào phòng</button>
+    <button class="duel-tab" id="tab-results" onclick="switchDuelTab('results')">📊 Kết quả</button>
+  </div>
+
+  <!-- Tab: Tạo phòng -->
+  <div id="duel-create-panel" class="duel-panel">
+    <h3>Tạo phòng thi mới</h3>
+    <p>Nhập tên của bạn, tạo phòng và chia sẻ link/mã phòng cho bạn bè cùng thi.</p>
+    <input class="duel-name-input" id="duel-creator-name" placeholder="Tên của bạn..." maxlength="25" oninput="clearDuelNameError()">
+    <div class="duel-name-error" id="duel-name-error">⚠ Vui lòng nhập tên trước khi tạo phòng</div>
+    <button class="duel-gen-btn" onclick="createDuelRoom()">⚔️ Tạo phòng thách đấu</button>
+  </div>
+
+  <!-- Tab: Vào phòng -->
+  <div id="duel-join-panel" class="duel-panel" style="display:none">
+    <h3>Vào phòng bằng mã</h3>
+    <p>Nhập tên của bạn và mã phòng bạn bè đã chia sẻ để tham gia thi cùng.</p>
+    <input class="duel-name-input" id="duel-joiner-name" placeholder="Tên của bạn..." maxlength="25">
+    <input class="duel-join-input" id="duel-room-code-input" placeholder="Nhập mã phòng (6 ký tự)..." maxlength="6" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+    <button class="duel-join-btn" onclick="joinDuelRoom()">🚀 Vào phòng &amp; bắt đầu thi</button>
+  </div>
+
+  <!-- Tab: Kết quả phòng -->
+  <div id="duel-results-panel" class="duel-panel" style="display:none">
+    <h3>Kết quả phòng thi</h3>
+    <p>Nhập mã phòng để xem kết quả của tất cả người tham gia.</p>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem">
+      <input class="duel-join-input" id="duel-result-code-input" placeholder="Mã phòng..." maxlength="6" style="text-transform:uppercase;margin-bottom:0" oninput="this.value=this.value.toUpperCase()">
+      <button onclick="loadDuelResults()" style="padding:0.75rem 1.2rem;background:linear-gradient(135deg,#1a3a6b,#1e5fa8);color:white;border:none;border-radius:10px;font-family:'Be Vietnam Pro',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap">Xem →</button>
+    </div>
+    <div id="duel-results-content">
+      <div class="duel-empty"><span class="de-icon">📊</span>Nhập mã phòng để xem kết quả</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:0.5rem 0 1.5rem">
+    <button class="btn btn-secondary" onclick="goHome()">← Về trang chủ</button>
+  </div>
+</div>
+
+<!-- MODAL phòng thi đã tạo -->
+<div class="name-modal-overlay" id="duel-room-modal">
+  <div class="name-modal-box" style="max-width:420px">
+    <h3>⚔️ Phòng đã tạo!</h3>
+    <p style="margin-bottom:0.7rem">Chia sẻ <strong>mã phòng</strong> hoặc <strong>link</strong> bên dưới cho bạn bè, rồi bắt đầu thi ngay!</p>
+    <div style="text-align:center;margin-bottom:0.8rem">
+      <div class="duel-room-id" id="duel-modal-room-id">------</div>
+      <div style="font-size:0.75rem;color:var(--text-sub)">Mã phòng</div>
+    </div>
+    <div class="duel-link-box" style="margin-bottom:1rem">
+      <input class="duel-link-input" id="duel-modal-link" readonly>
+      <button class="duel-copy-btn" id="duel-copy-btn" onclick="copyDuelLink()">📋 Sao chép</button>
+    </div>
+    <div class="duel-waiting">
+      <span class="duel-waiting-dot"></span>
+      <span id="duel-waiting-text">Đang chờ người tham gia...</span>
+    </div>
+    <div class="name-modal-actions">
+      <button class="btn-cancel-ranked" onclick="closeDuelRoomModal()">Huỷ phòng</button>
+      <button class="btn-start-ranked" style="background:linear-gradient(135deg,#1a3a6b,#1e5fa8);box-shadow:0 4px 12px rgba(26,58,107,0.3)" onclick="startDuelExam()">⚔️ Bắt đầu thi!</button>
+    </div>
   </div>
 </div>
 
@@ -2346,6 +2532,258 @@ async function handleRankedResult(score10, timeUsed) {
   } else {
     notify.innerHTML=`<div class="lb-notify lb-notify-fail"><span class="lb-notify-icon">📊</span><div class="lb-notify-text">Bài thi xếp hạng của <strong>${escHtml(savedName)}</strong>: <strong>${score10}/10 điểm</strong>.<br>Cần <strong>trên 9 điểm</strong> để lên bảng. Cố lên nào! 💪</div></div>`;
   }
+}
+
+/* ═══════════════════════════════════════════════
+   THÁCH ĐẤU BẠN BÈ
+═══════════════════════════════════════════════ */
+let duelRoomId = '';
+let duelPlayerName = '';
+let isDuelMode = false;
+
+function openDuel() {
+  ['home','quiz','exam','result','leaderboard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const d=document.getElementById('duel'); d.style.display='block';
+  d.classList.remove('screen-enter'); void d.offsetWidth; d.classList.add('screen-enter');
+  // pre-fill room code from URL if any
+  const urlParams = new URLSearchParams(window.location.search);
+  const rc = urlParams.get('room');
+  if (rc) { switchDuelTab('join'); document.getElementById('duel-room-code-input').value=rc.toUpperCase(); }
+}
+
+function switchDuelTab(tab) {
+  ['create','join','results'].forEach(t => {
+    document.getElementById('duel-'+t+'-panel').style.display = t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+}
+
+function clearDuelNameError() {
+  document.getElementById('duel-name-error').classList.remove('show');
+}
+
+function genRoomId() {
+  return Math.random().toString(36).substring(2,8).toUpperCase();
+}
+
+async function createDuelRoom() {
+  const nameEl=document.getElementById('duel-creator-name');
+  const name=nameEl.value.trim();
+  if(!name){ document.getElementById('duel-name-error').classList.add('show'); nameEl.focus(); return; }
+  duelRoomId = genRoomId();
+  duelPlayerName = name;
+  // Save room meta to shared storage
+  const roomData = { createdBy:name, createdAt:Date.now(), participants:[] };
+  await window.storage.set('duel_room_'+duelRoomId, JSON.stringify(roomData), true);
+  // Show modal
+  document.getElementById('duel-modal-room-id').textContent = duelRoomId;
+  const link = window.location.href.split('?')[0]+'?room='+duelRoomId;
+  document.getElementById('duel-modal-link').value = link;
+  document.getElementById('duel-room-modal').classList.add('active');
+  document.getElementById('duel-waiting-text').textContent = 'Đang chờ người tham gia...';
+  startWatchingRoom();
+}
+
+let watchInterval = null;
+function startWatchingRoom() {
+  clearInterval(watchInterval);
+  watchInterval = setInterval(async()=>{
+    try {
+      const r = await window.storage.get('duel_room_'+duelRoomId, true);
+      if(!r) return;
+      const data = JSON.parse(r.value);
+      const count = (data.participants||[]).length;
+      document.getElementById('duel-waiting-text').textContent =
+        count===0 ? 'Đang chờ người tham gia...' : `${count} người đã tham gia — sẵn sàng bắt đầu!`;
+    } catch(e){}
+  }, 3000);
+}
+
+function copyDuelLink() {
+  const link = document.getElementById('duel-modal-link').value;
+  navigator.clipboard.writeText(link).catch(()=>{});
+  const btn=document.getElementById('duel-copy-btn');
+  btn.textContent='✓ Đã sao chép'; btn.classList.add('copied');
+  setTimeout(()=>{ btn.textContent='📋 Sao chép'; btn.classList.remove('copied'); }, 2000);
+}
+
+function closeDuelRoomModal() {
+  clearInterval(watchInterval);
+  document.getElementById('duel-room-modal').classList.remove('active');
+  duelRoomId=''; duelPlayerName='';
+}
+
+function startDuelExam() {
+  clearInterval(watchInterval);
+  document.getElementById('duel-room-modal').classList.remove('active');
+  isDuelMode = true;
+  startQuiz('all');
+}
+
+async function joinDuelRoom() {
+  const nameEl=document.getElementById('duel-joiner-name');
+  const codeEl=document.getElementById('duel-room-code-input');
+  const name=nameEl.value.trim();
+  const code=codeEl.value.trim().toUpperCase();
+  if(!name){ nameEl.focus(); nameEl.style.borderColor='var(--red)'; setTimeout(()=>nameEl.style.borderColor='',1500); return; }
+  if(code.length!==6){ codeEl.focus(); codeEl.style.borderColor='var(--red)'; setTimeout(()=>codeEl.style.borderColor='',1500); return; }
+  try {
+    const r = await window.storage.get('duel_room_'+code, true);
+    if(!r){ codeEl.style.borderColor='var(--red)'; alert('Không tìm thấy phòng "'+code+'". Kiểm tra lại mã phòng!'); setTimeout(()=>codeEl.style.borderColor='',1500); return; }
+    duelRoomId = code;
+    duelPlayerName = name;
+    isDuelMode = true;
+    document.getElementById('duel-room-modal');
+    // Register as participant
+    const data = JSON.parse(r.value);
+    data.participants = data.participants||[];
+    if(!data.participants.includes(name)) data.participants.push(name);
+    await window.storage.set('duel_room_'+code, JSON.stringify(data), true);
+    document.getElementById('duel').style.display='none';
+    startQuiz('all');
+  } catch(e){ alert('Lỗi kết nối. Thử lại nhé!'); }
+}
+
+async function handleDuelResult(score10, timeUsed) {
+  isDuelMode = false;
+  if(!duelRoomId || !duelPlayerName) return;
+  const tMin=Math.floor(timeUsed/60), tSec=timeUsed%60;
+  const timeStr=`${tMin}p${String(tSec).padStart(2,'0')}s`;
+  try {
+    const key = 'duel_score_'+duelRoomId;
+    let scores=[];
+    try{ const r=await window.storage.get(key,true); if(r) scores=JSON.parse(r.value); }catch(e){}
+    scores = scores.filter(s=>s.name!==duelPlayerName);
+    scores.push({name:duelPlayerName, score:score10, timeStr, seconds:timeUsed, ts:Date.now()});
+    scores.sort((a,b)=>b.score-a.score||a.seconds-b.seconds);
+    await window.storage.set(key, JSON.stringify(scores), true);
+    // Show duel result notification
+    const notify=document.getElementById('lb-result-notify');
+    notify.style.display='block';
+    const rank = scores.findIndex(s=>s.name===duelPlayerName)+1;
+    const total = scores.length;
+    const medalEmoji = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'📊';
+    notify.innerHTML=`<div class="lb-notify" style="border-color:#1e5fa8;background:linear-gradient(135deg,#eef4fd,#e0ecff)">
+      <span class="lb-notify-icon">${medalEmoji}</span>
+      <div class="lb-notify-text" style="color:#1a3a6b">
+        Phòng <strong>${escHtml(duelRoomId)}</strong> — Điểm của bạn: <strong>${score10}/10</strong><br>
+        Hạng ${rank}/${total} trong phòng thi.
+        <button onclick="viewDuelResult('${duelRoomId}')" style="margin-top:0.5rem;background:#1e5fa8;color:white;border:none;border-radius:8px;padding:0.3rem 0.9rem;font-family:'Be Vietnam Pro',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;">Xem kết quả phòng →</button>
+      </div></div>`;
+  } catch(e){}
+  duelRoomId=''; duelPlayerName='';
+}
+
+function viewDuelResult(roomId) {
+  openDuel();
+  switchDuelTab('results');
+  document.getElementById('duel-result-code-input').value=roomId;
+  loadDuelResults();
+}
+
+async function loadDuelResults() {
+  const code = document.getElementById('duel-result-code-input').value.trim().toUpperCase();
+  const container = document.getElementById('duel-results-content');
+  if(!code){ container.innerHTML='<div class="duel-empty"><span class="de-icon">⚠️</span>Vui lòng nhập mã phòng</div>'; return; }
+  container.innerHTML='<div class="duel-empty"><span class="de-icon">⏳</span>Đang tải...</div>';
+  try {
+    const r = await window.storage.get('duel_score_'+code, true);
+    if(!r||!JSON.parse(r.value).length){ container.innerHTML='<div class="duel-empty"><span class="de-icon">🎯</span>Phòng '+escHtml(code)+' chưa có ai nộp bài.</div>'; return; }
+    const scores = JSON.parse(r.value);
+    const medals=['🥇','🥈','🥉'];
+    container.innerHTML=`<div class="duel-results-table">
+      <div class="duel-results-header"><div>Hạng</div><div>Tên</div><div style="text-align:center">Điểm</div><div style="text-align:right">Giờ làm</div></div>
+      ${scores.map((s,i)=>`<div class="duel-result-row${s.name===duelPlayerName?' is-me':''}">
+        <div style="text-align:center;font-size:${i<3?'1.2rem':'0.85rem'}">${i<3?medals[i]:i+1}</div>
+        <div class="dr-name">${escHtml(s.name)}${s.name===duelPlayerName?'<span class="duel-badge">Bạn</span>':''}</div>
+        <div class="dr-score">${s.score}</div>
+        <div class="dr-time">${s.timeStr}</div>
+      </div>`).join('')}
+    </div>
+    <div style="text-align:center;font-size:0.78rem;color:var(--text-sub)">Phòng: <strong>${escHtml(code)}</strong> · ${scores.length} người thi</div>`;
+  } catch(e){ container.innerHTML='<div class="duel-empty"><span class="de-icon">⚠️</span>Không thể tải kết quả.</div>'; }
+}
+
+/* ═══════════════════════════════════════════════
+   BÌNH LUẬN CỘNG ĐỒNG
+═══════════════════════════════════════════════ */
+let currentQuestionId = '';
+let commentOpen = false;
+
+async function loadCommentsForQuestion(qid) {
+  currentQuestionId = qid;
+  commentOpen = false;
+  const body = document.getElementById('comment-body');
+  body.classList.remove('open');
+  const section = document.getElementById('comment-section');
+  section.style.display='block';
+  // Load count only (fast)
+  try {
+    const r = await window.storage.get('comments_'+qid, true);
+    const comments = r ? JSON.parse(r.value) : [];
+    document.getElementById('comment-count').textContent = comments.length;
+  } catch(e){ document.getElementById('comment-count').textContent='0'; }
+}
+
+async function toggleComments() {
+  commentOpen = !commentOpen;
+  const body = document.getElementById('comment-body');
+  body.classList.toggle('open', commentOpen);
+  if(commentOpen) await renderComments();
+}
+
+async function renderComments() {
+  const list = document.getElementById('comment-list');
+  list.innerHTML='<div class="comment-empty">⏳ Đang tải...</div>';
+  try {
+    const r = await window.storage.get('comments_'+currentQuestionId, true);
+    const comments = r ? JSON.parse(r.value) : [];
+    document.getElementById('comment-count').textContent=comments.length;
+    if(!comments.length){ list.innerHTML='<div class="comment-empty">Chưa có bình luận nào. Hãy là người đầu tiên!</div>'; return; }
+    list.innerHTML='';
+    comments.slice().reverse().forEach((c,i)=>{
+      const el=document.createElement('div');
+      el.className='comment-item';
+      el.style.animationDelay=i*0.04+'s';
+      const d=new Date(c.ts);
+      const dateStr=d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+      el.innerHTML=`<div class="ci-header"><span class="ci-name">👤 ${escHtml(c.name)}</span><span class="ci-date">${dateStr}</span></div>
+        <div class="ci-text">${escHtml(c.text)}</div>
+        <div class="ci-likes"><button class="ci-like-btn${c.liked?' liked':''}" onclick="toggleLike('${c.id}',this)">❤ ${c.likes||0}</button></div>`;
+      list.appendChild(el);
+    });
+  } catch(e){ list.innerHTML='<div class="comment-empty">Không thể tải bình luận.</div>'; }
+}
+
+async function submitComment() {
+  const nameEl=document.getElementById('comment-name');
+  const textEl=document.getElementById('comment-text');
+  const name=nameEl.value.trim()||'Ẩn danh';
+  const text=textEl.value.trim();
+  if(!text){ textEl.style.borderColor='var(--red)'; textEl.focus(); setTimeout(()=>textEl.style.borderColor='',1500); return; }
+  try {
+    const r = await window.storage.get('comments_'+currentQuestionId, true);
+    const comments = r ? JSON.parse(r.value) : [];
+    comments.push({ id:Date.now().toString(36), name, text, ts:Date.now(), likes:0, liked:false });
+    if(comments.length>50) comments.splice(0, comments.length-50);
+    await window.storage.set('comments_'+currentQuestionId, JSON.stringify(comments), true);
+    textEl.value='';
+    await renderComments();
+  } catch(e){ alert('Lỗi gửi bình luận. Thử lại!'); }
+}
+
+async function toggleLike(commentId, btn) {
+  try {
+    const r = await window.storage.get('comments_'+currentQuestionId, true);
+    const comments = r ? JSON.parse(r.value) : [];
+    const c = comments.find(x=>x.id===commentId);
+    if(!c) return;
+    c.liked = !c.liked;
+    c.likes = (c.likes||0) + (c.liked?1:-1);
+    await window.storage.set('comments_'+currentQuestionId, JSON.stringify(comments), true);
+    btn.textContent=`❤ ${c.likes}`;
+    btn.classList.toggle('liked', c.liked);
+  } catch(e){}
 }
 </script>
 </body>
